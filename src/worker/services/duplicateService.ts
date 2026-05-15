@@ -4,7 +4,7 @@ import { logger } from '../../core/logger';
 
 export const calculatePHash = async (filePath: string): Promise<string> => {
   try {
-    // 16 represents the hash length, a standard size
+
     const hash = await imghash.hash(filePath, 16);
     return hash;
   } catch (error: any) {

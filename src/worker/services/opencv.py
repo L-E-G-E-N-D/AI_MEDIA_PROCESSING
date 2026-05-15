@@ -5,16 +5,14 @@ import numpy as np
 
 def analyze_image(image_path):
     try:
-        # Load image
+
         img = cv2.imread(image_path)
         if img is None:
             raise ValueError(f"Could not read image: {image_path}")
 
-        # 1. Blur Detection (Variance of Laplacian)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
 
-        # 2. Brightness Analysis (Average V channel in HSV)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         brightness = np.mean(hsv[:, :, 2])
 

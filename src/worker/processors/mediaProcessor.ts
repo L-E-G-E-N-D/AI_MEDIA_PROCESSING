@@ -9,14 +9,13 @@ import { checkIsScreenshot } from '../services/screenshotService';
 export const processMediaJob = async (job: Job) => {
   const { jobId, filePath } = job.data;
 
-  // 1. Update status to PROCESSING
   await prisma.mediaJob.update({
     where: { id: jobId },
     data: { status: 'PROCESSING' },
   });
 
   try {
-    // 2. Execute Heuristics concurrently where possible
+
     const [openCvResult, phash, ocrResult, isScreenshot] = await Promise.all([
       analyzeImageWithOpenCV(filePath),
       calculatePHash(filePath),
@@ -24,10 +23,8 @@ export const processMediaJob = async (job: Job) => {
       checkIsScreenshot(filePath)
     ]);
 
-    // 3. Check for duplicates using the generated pHash
     const isDuplicate = await checkIsDuplicate(phash, jobId);
 
-    // 4. Save results
     await prisma.mediaAnalysisResult.create({
       data: {
         jobId,
@@ -44,7 +41,6 @@ export const processMediaJob = async (job: Job) => {
       },
     });
 
-    // 5. Update status to COMPLETED
     await prisma.mediaJob.update({
       where: { id: jobId },
       data: { status: 'COMPLETED' },
@@ -52,14 +48,12 @@ export const processMediaJob = async (job: Job) => {
 
   } catch (error: any) {
     logger.error({ jobId, err: error }, 'Error processing media heuristics');
-    
-    // Fallback: update status to FAILED
+
     await prisma.mediaJob.update({
       where: { id: jobId },
       data: { status: 'FAILED' },
     });
-    
-    // Save error log to result
+
     await prisma.mediaAnalysisResult.upsert({
       where: { jobId },
       update: { errorLog: error.message },

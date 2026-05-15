@@ -13,7 +13,7 @@ export const analyzeImageWithOpenCV = async (filePath: string): Promise<OpenCVRe
   const pythonScript = path.join(__dirname, 'opencv.py');
   
   try {
-    // Assuming python3 is available in the environment (e.g. docker or local)
+
     const { stdout, stderr } = await execAsync(`python3 ${pythonScript} "${filePath}"`);
     
     if (stderr && !stdout) {

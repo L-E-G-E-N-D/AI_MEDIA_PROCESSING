@@ -3,7 +3,6 @@ import path from 'path';
 import { config } from '../../core/config';
 import fs from 'fs';
 
-// Ensure upload dir exists
 if (!fs.existsSync(config.uploadDir)) {
   fs.mkdirSync(config.uploadDir, { recursive: true });
 }

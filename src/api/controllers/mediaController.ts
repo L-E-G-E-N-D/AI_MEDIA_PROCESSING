@@ -11,7 +11,6 @@ export const mediaController = {
         return;
       }
 
-      // 1. Create DB record
       const job = await prisma.mediaJob.create({
         data: {
           filename: req.file.originalname,
@@ -20,7 +19,6 @@ export const mediaController = {
         },
       });
 
-      // 2. Enqueue job
       await mediaQueue.add('process-media', {
         jobId: job.id,
         filePath: job.filePath,
@@ -40,9 +38,9 @@ export const mediaController = {
 
   getMediaStatus: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { jobId } = req.params;
+      const jobId = req.params.jobId as string;
 
-      const job = await prisma.mediaJob.findUnique({
+      const job: any = await prisma.mediaJob.findUnique({
         where: { id: jobId },
         include: { analysisResult: true },
       });
