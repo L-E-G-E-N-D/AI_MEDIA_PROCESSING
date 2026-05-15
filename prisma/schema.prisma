@@ -1,0 +1,44 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model MediaJob {
+  id        String    @id @default(uuid()) @db.Uuid
+  filename  String
+  status    JobStatus @default(PENDING)
+  filePath  String    @map("file_path")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  analysisResult MediaAnalysisResult?
+
+  @@map("media_jobs")
+}
+
+model MediaAnalysisResult {
+  jobId            String   @id @map("job_id") @db.Uuid
+  job              MediaJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  phash            String?
+  isDuplicate      Boolean  @default(false) @map("is_duplicate")
+  ocrText          String?  @map("ocr_text")
+  numberPlate      String?  @map("number_plate")
+  blurScore        Float?   @map("blur_score")
+  brightnessScore  Float?   @map("brightness_score")
+  isScreenshot     Boolean  @default(false) @map("is_screenshot")
+  confidenceScores Json?    @map("confidence_scores")
+  errorLog         String?  @map("error_log")
+
+  @@map("media_analysis_results")
+}
