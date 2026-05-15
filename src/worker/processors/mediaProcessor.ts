@@ -1,6 +1,10 @@
 import { Job } from 'bullmq';
 import { prisma } from '../../core/database';
 import { logger } from '../../core/logger';
+import { analyzeImageWithOpenCV } from '../services/opencvService';
+import { calculatePHash, checkIsDuplicate } from '../services/duplicateService';
+import { extractOcrAndPlate } from '../services/ocrService';
+import { checkIsScreenshot } from '../services/screenshotService';
 
 export const processMediaJob = async (job: Job) => {
   const { jobId, filePath } = job.data;
@@ -12,36 +16,35 @@ export const processMediaJob = async (job: Job) => {
   });
 
   try {
-    // TODO: Implement actual heuristics (OpenCV, pHash, Tesseract)
-    const ocrText = "Sample Extracted Text DL 4C AW 2342";
-    const numberPlate = "DL 4C AW 2342";
-    const blurScore = 150.5;
-    const brightnessScore = 120.0;
-    const isScreenshot = false;
-    const phash = "1a2b3c4d5e6f7g8h";
+    // 2. Execute Heuristics concurrently where possible
+    const [openCvResult, phash, ocrResult, isScreenshot] = await Promise.all([
+      analyzeImageWithOpenCV(filePath),
+      calculatePHash(filePath),
+      extractOcrAndPlate(filePath),
+      checkIsScreenshot(filePath)
+    ]);
 
-    // Mock duplicate check
-    const isDuplicate = false;
+    // 3. Check for duplicates using the generated pHash
+    const isDuplicate = await checkIsDuplicate(phash, jobId);
 
-    // 2. Save results
+    // 4. Save results
     await prisma.mediaAnalysisResult.create({
       data: {
         jobId,
         phash,
         isDuplicate,
-        ocrText,
-        numberPlate,
-        blurScore,
-        brightnessScore,
+        ocrText: ocrResult.ocrText,
+        numberPlate: ocrResult.numberPlate,
+        blurScore: openCvResult.blurScore,
+        brightnessScore: openCvResult.brightnessScore,
         isScreenshot,
         confidenceScores: {
-          ocr: 0.9,
-          plate: 0.95
+          plate: ocrResult.plateConfidence,
         }
       },
     });
 
-    // 3. Update status to COMPLETED
+    // 5. Update status to COMPLETED
     await prisma.mediaJob.update({
       where: { id: jobId },
       data: { status: 'COMPLETED' },
@@ -66,6 +69,6 @@ export const processMediaJob = async (job: Job) => {
       }
     });
 
-    throw error; // Re-throw so BullMQ knows it failed
+    throw error; // Re-throw so BullMQ knows it failed and can apply backoff retries
   }
 };
