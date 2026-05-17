@@ -14,7 +14,7 @@ export const analyzeImageWithOpenCV = async (filePath: string): Promise<OpenCVRe
   
   try {
 
-    const { stdout, stderr } = await execAsync(`python3 ${pythonScript} "${filePath}"`);
+    const { stdout, stderr } = await execAsync(`python3 "${pythonScript}" "${filePath}"`);
     
     if (stderr && !stdout) {
       throw new Error(`Python OpenCV Error: ${stderr}`);
