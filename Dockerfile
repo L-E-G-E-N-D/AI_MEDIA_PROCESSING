@@ -1,22 +1,32 @@
-FROM node:20-bullseye-slim
+FROM ubuntu:22.04
 
-# Set working directory
+# Prevent interactive prompts during apt install
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /app
 
-# Install system dependencies
-# We need python3, pip, libgl1 for OpenCV, and tesseract-ocr
-RUN apt-get update && apt-get install -y \\
-    python3 \\
-    python3-pip \\
-    libgl1-mesa-glx \\
-    libglib2.0-0 \\
-    tesseract-ocr \\
-    tesseract-ocr-eng \\
+# Fix Docker Desktop ARM64 network bugs causing Hash Sum mismatches
+RUN echo "Acquire::http::Pipeline-Depth 0;" > /etc/apt/apt.conf.d/99fixbadproxy && \
+    echo "Acquire::http::No-Cache true;" >> /etc/apt/apt.conf.d/99fixbadproxy && \
+    echo "Acquire::BrokenProxy    true;" >> /etc/apt/apt.conf.d/99fixbadproxy
+
+# Install system dependencies, python, OpenCV deps, Tesseract, and curl
+RUN apt-get update --fix-missing && apt-get install -y \
+    python3 \
+    python3-pip \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
 # Install python dependencies globally
-# --break-system-packages is needed on newer pip versions
-RUN pip3 install opencv-python numpy --break-system-packages
+RUN pip3 install opencv-python numpy
 
 # Install Node dependencies
 COPY package*.json ./
