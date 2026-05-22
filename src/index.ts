@@ -4,16 +4,12 @@ import { logger } from './core/logger';
 import { runWorker } from './worker/worker';
 
 const start = async () => {
-  const isWorker = process.env.RUN_WORKER === 'true';
+  logger.info('Starting BullMQ worker in background...');
+  runWorker().catch(err => logger.error({ err }, 'Worker crashed'));
 
-  if (isWorker) {
-    logger.info('Starting BullMQ worker...');
-    await runWorker();
-  } else {
-    app.listen(config.port, () => {
-      logger.info(`API server running on port ${config.port} in ${config.nodeEnv} mode`);
-    });
-  }
+  app.listen(config.port, () => {
+    logger.info(`API server running on port ${config.port} in ${config.nodeEnv} mode`);
+  });
 };
 
 start().catch((err) => {

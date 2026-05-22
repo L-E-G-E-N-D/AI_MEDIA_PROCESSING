@@ -19,6 +19,7 @@ RUN apt-get update --fix-missing && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-eng \
     curl \
+    redis-server \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20
@@ -41,7 +42,5 @@ RUN npx prisma generate
 # Build TypeScript code
 RUN npm run build
 
-# Start the application
-# We can dynamically run the API or Worker by passing an environment variable.
-# e.g., RUN_WORKER=true to start the worker.
-CMD ["npm", "run", "start"]
+# Start Redis in the background, then start the Node.js application
+CMD redis-server --daemonize yes && npm run start
