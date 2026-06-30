@@ -53,7 +53,10 @@ export const mediaController = {
       res.status(200).json({
         jobId: job.id,
         status: job.status,
-        result: job.analysisResult || null,
+        result: job.analysisResult ? {
+          ...job.analysisResult,
+          filePath: job.filePath
+        } : null,
       });
     } catch (error) {
       logger.error({ err: error }, 'Error fetching media status');

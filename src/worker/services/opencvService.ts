@@ -7,6 +7,7 @@ const execAsync = util.promisify(exec);
 export interface OpenCVResult {
   blurScore: number;
   brightnessScore: number;
+  croppedPlatePath: string | null;
 }
 
 export const analyzeImageWithOpenCV = async (filePath: string): Promise<OpenCVResult> => {
@@ -29,6 +30,7 @@ export const analyzeImageWithOpenCV = async (filePath: string): Promise<OpenCVRe
     return {
       blurScore: result.blur_score,
       brightnessScore: result.brightness_score,
+      croppedPlatePath: result.cropped_plate_path || null,
     };
   } catch (error: any) {
     throw new Error(`Failed to execute OpenCV analysis: ${error.message}`);

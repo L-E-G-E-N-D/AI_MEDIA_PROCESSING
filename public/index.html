@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intelligent Media Processing Pipeline</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon"></div>
+        <h1>Intelligent Media Pipeline</h1>
+      </div>
+      <div class="status-panel">
+        <div class="status-item">
+          <span class="status-indicator online pulsing"></span>
+          <span class="status-text">API Server</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator online pulsing"></span>
+          <span class="status-text">Worker Service</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="dashboard-grid">
+      <!-- Left Column: Upload & Live Queue -->
+      <section class="dashboard-section left-col">
+        <!-- Upload Card -->
+        <div class="card glass upload-card">
+          <div class="card-header">
+            <h2>Upload Vehicle Media</h2>
+            <p class="subtitle">Supports JPG, PNG, and JPEG images</p>
+          </div>
+          
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+            <div class="dropzone-content">
+              <div class="upload-icon-container">
+                <svg class="upload-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+              </div>
+              <p class="upload-prompt">Drag & drop your vehicle image here, or <span class="highlight">browse files</span></p>
+            </div>
+            <div class="upload-preview" id="upload-preview" style="display: none;">
+              <img id="preview-img" src="" alt="Preview">
+              <button class="btn btn-danger btn-sm remove-preview-btn" id="remove-preview-btn">Change Image</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="process-btn" disabled>
+            <span>Analyze Image</span>
+          </button>
+        </div>
+
+        <!-- Job Queue Card -->
+        <div class="card glass queue-card">
+          <div class="card-header flex-header">
+            <div>
+              <h2>Job History & Queue</h2>
+              <p class="subtitle">Live status monitoring</p>
+            </div>
+            <button class="btn btn-icon" id="clear-history-btn" title="Clear History">
+              <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+          <div class="queue-list" id="queue-list">
+            <!-- Dynamically populated -->
+            <div class="empty-state">
+              <p>No jobs submitted yet. Upload an image to start processing.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Details & Insights -->
+      <section class="dashboard-section right-col">
+        <div class="card glass details-card" id="details-panel">
+          <div class="empty-details" id="empty-details">
+            <svg class="empty-details-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+            <h3>Select a job to view detailed insights</h3>
+            <p>Select any active or completed job from the list to display heuristic analysis scores and image metrics.</p>
+          </div>
+
+          <div class="details-content" id="details-content" style="display: none;">
+            <div class="details-header">
+              <div>
+                <span class="badge" id="details-status-badge">Processing</span>
+                <h2 id="details-filename">filename.jpg</h2>
+                <p class="subtitle" id="details-job-id">Job ID: ---</p>
+              </div>
+            </div>
+
+            <div class="details-layout-grid">
+              <!-- Visual Image Panel -->
+              <div class="details-image-panel">
+                <div class="image-wrapper">
+                  <img id="details-img" src="" alt="Analyzed Vehicle Media">
+                </div>
+              </div>
+
+              <!-- Heuristic Stats List -->
+              <div class="details-stats-panel">
+                <!-- Heuristic: Duplicate Check -->
+                <div class="heuristic-alert" id="duplicate-alert" style="display: none;">
+                  <div class="alert-icon">⚠️</div>
+                  <div class="alert-body">
+                    <h4>Perceptual Duplicate Detected</h4>
+                    <p>This image closely matches a previously processed photo in the database.</p>
+                  </div>
+                </div>
+
+                <!-- Heuristic: Screenshot check -->
+                <div class="heuristic-alert info" id="screenshot-alert" style="display: none;">
+                  <div class="alert-icon">📱</div>
+                  <div class="alert-body">
+                    <h4>Screenshot Heuristics Flagged</h4>
+                    <p>Complete absence of metadata detected. The media is likely a screenshot.</p>
+                  </div>
+                </div>
+
+                <h3>Analysis Heuristics</h3>
+
+                <div class="metrics-grid">
+                  <!-- Blur Score -->
+                  <div class="metric-card">
+                    <div class="metric-info">
+                      <span class="metric-label">Blur Score (Laplacian Var)</span>
+                      <span class="metric-value" id="blur-val">0.0</span>
+                    </div>
+                    <div class="metric-progress-container">
+                      <div class="metric-progress-bar" id="blur-progress" style="width: 0%;"></div>
+                    </div>
+                    <span class="metric-helper" id="blur-helper">Calculating...</span>
+                  </div>
+
+                  <!-- Brightness Score -->
+                  <div class="metric-card">
+                    <div class="metric-info">
+                      <span class="metric-label">Brightness Score (HSV V-Mean)</span>
+                      <span class="metric-value" id="brightness-val">0.0</span>
+                    </div>
+                    <div class="metric-progress-container">
+                      <div class="metric-progress-bar" id="brightness-progress" style="width: 0%;"></div>
+                    </div>
+                    <span class="metric-helper" id="brightness-helper">Calculating...</span>
+                  </div>
+                </div>
+
+                <h3 class="margin-top">OCR Text & License Plate</h3>
+                
+                <div class="license-plate-showcase">
+                  <div class="ocr-text-box">
+                    <span class="section-sub-title">Extracted Raw OCR Text</span>
+                    <pre class="raw-ocr" id="raw-ocr-text">---</pre>
+                  </div>
+
+                  <div class="plate-box-container">
+                    <div class="plate-box">
+                      <span class="plate-title">Detected Number Plate</span>
+                      <div class="plate-display" id="plate-display">NONE</div>
+                    </div>
+                    <div class="confidence-box">
+                      <span class="plate-title">Confidence</span>
+                      <div class="confidence-value" id="plate-confidence">0%</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- pHash Details -->
+                <div class="phash-box margin-top">
+                  <span class="section-sub-title">Perceptual Hash (16-bit)</span>
+                  <code id="phash-display" class="phash-code">----------------------------------------------------------------</code>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

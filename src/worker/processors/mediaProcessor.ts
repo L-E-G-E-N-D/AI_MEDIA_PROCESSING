@@ -16,10 +16,11 @@ export const processMediaJob = async (job: Job) => {
 
   try {
 
-    const [openCvResult, phash, ocrResult, isScreenshot] = await Promise.all([
-      analyzeImageWithOpenCV(filePath),
+    const openCvResult = await analyzeImageWithOpenCV(filePath);
+
+    const [phash, ocrResult, isScreenshot] = await Promise.all([
       calculatePHash(filePath),
-      extractOcrAndPlate(filePath),
+      extractOcrAndPlate(openCvResult.croppedPlatePath || filePath),
       checkIsScreenshot(filePath)
     ]);
 
