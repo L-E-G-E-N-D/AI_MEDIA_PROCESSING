@@ -11,7 +11,7 @@ export interface OpenCVResult {
 }
 
 export const analyzeImageWithOpenCV = async (filePath: string): Promise<OpenCVResult> => {
-  const pythonScript = path.join(__dirname, 'opencv.py');
+  const pythonScript = path.join(process.cwd(), 'src/worker/services/opencv.py');
   
   try {
 
